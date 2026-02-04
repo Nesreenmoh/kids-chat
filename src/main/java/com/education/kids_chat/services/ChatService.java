@@ -58,33 +58,30 @@ public class ChatService {
                     .build();
         }
 
-        return bullyingDetectionService.handelBullying(request);
+      /*
+      Create Open AI Chat
+       */
+        OpenAIClient openAIClient = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(OPEN_AI_KEY))
+                .endpoint(OPEN_AI_ENDPOINT)
+                .buildClient();
 
 
-//      /*
-//      Create Open AI Chat
-//       */
-//        OpenAIClient openAIClient = new OpenAIClientBuilder()
-//                .credential(new AzureKeyCredential(OPEN_AI_KEY))
-//                .endpoint(OPEN_AI_ENDPOINT)
-//                .buildClient();
-//
-//
-//        List<ChatRequestMessage> chatMessages = List.of(
-//                new ChatRequestSystemMessage(SYS_GEN_MSG),
-//                new ChatRequestUserMessage(request.question()));
-//
-//
-//       /*
-//       define the Options
-//        */
-//
-//        ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
-//
-//       /*
-//       define chat completion to get the response
-//        */
-//        ChatCompletions chatCompletions = openAIClient.getChatCompletions(DEPLOY_NAME, options);
+        List<ChatRequestMessage> chatMessages = List.of(
+                new ChatRequestSystemMessage(SYS_GEN_MSG),
+                new ChatRequestUserMessage(request.question()));
+
+
+       /*
+       define the Options
+        */
+
+        ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
+
+       /*
+       define chat completion to get the response
+        */
+        ChatCompletions chatCompletions = openAIClient.getChatCompletions(DEPLOY_NAME, options);
 //        return Response
 //                .builder()
 //                .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
@@ -93,6 +90,7 @@ public class ChatService {
 //                .totalToken(chatCompletions.getUsage().getTotalTokens())
 //                .responseMode(ResponseMode.SUPPORTIVE)
 //                .build();
+        return bullyingDetectionService.handelBullying(request);
     }
 
 

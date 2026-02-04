@@ -8,7 +8,6 @@ import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.core.credential.AzureKeyCredential;
-import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.Request;
 import com.education.kids_chat.models.Response;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ public class BullyingDetectionService {
                 
                 Return JSON only:
                 {
+                  "message": "<echo the original message>",
                   "bullyingDetected": true/false,
                   "category": "NONE" | "MILD" | "MODERATE" | "HIGH",
                   "confidence": number
