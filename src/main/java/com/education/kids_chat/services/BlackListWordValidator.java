@@ -19,7 +19,7 @@ public class BlackListWordValidator implements AiOutputValidation {
                 .toList();
 
         return ValidationResult.builder()
-                .valid(!violations.isEmpty())
+                .valid(violations.isEmpty())
                 .violations(violations)
                 .build();
     }

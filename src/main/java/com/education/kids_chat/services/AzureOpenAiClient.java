@@ -5,6 +5,7 @@ import com.azure.ai.openai.OpenAIClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.*;
 import com.azure.core.credential.AzureKeyCredential;
+import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.Response;
 import com.education.kids_chat.models.Token;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,7 @@ public class AzureOpenAiClient {
                 .buildClient();
     }
 
-    public Response generateResponse(String userPrompt, String systemPrompt) {
+    public Response generateResponse(String userPrompt, String systemPrompt, ResponseMode responseMode) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(List.of(
                 new ChatRequestSystemMessage(systemPrompt),
@@ -47,6 +48,7 @@ public class AzureOpenAiClient {
         return Response
                 .builder()
                 .answer(content)
+                .responseMode(responseMode)
                 .token(new Token(completionsUsage.getPromptTokens(), completionsUsage.getCompletionTokens(), completionsUsage.getTotalTokens()))
                 .build();
     }

@@ -61,32 +61,35 @@ public class ChatService {
             }
         };
 
-        Response orginalResponse = azureOpenAiClient.generateResponse(request.question(), systemPrompt);
+        Response originalResponse = azureOpenAiClient.generateResponse(request.question(), systemPrompt,responseMode);
+        LOGGER.info("Original response: {}", originalResponse.answer());
         /*
         validate the response from the model
          */
-        ValidationResult validateResultV1 = blackListWordValidator.validate(orginalResponse.answer());
+        ValidationResult validateResultV1 = blackListWordValidator.validate(originalResponse.answer());
 
         if (!validateResultV1.valid()) {
-
-            Response repaired = azureOpenAiClient.generateResponse(FIX_SYS_PROMPT_MSG.formatted(validateResultV1.violations()), orginalResponse.answer());
-
+            String sysPro = FIX_SYS_PROMPT_MSG.formatted(validateResultV1.violations(), originalResponse.answer());
+            Response repaired = azureOpenAiClient.generateResponse(originalResponse.answer(),sysPro,responseMode);
+            LOGGER.info("Repaired1 response: {}", repaired);
             ValidationResult validateResultV2 = blackListWordValidator.validate(repaired.answer());
             if (validateResultV2.valid()) {
                 return repaired;
             }
+            else
+            {
             return Response
                     .builder()
                     .answer(CLARIFICATION_SYSTEM_PROMPT_MSG)
                     .token(new Token(0, 0, 0))
-                    .responseMode(ResponseMode.CLARIFICATION)
-                    .build();
+                    .responseMode(ResponseMode.CLARIFICATION).build();
+            }
 
         }
         return Response
                 .builder()
-                .answer(orginalResponse.answer())
-                .token(new Token(orginalResponse.token().promptToken(), orginalResponse.token().completionToken(), orginalResponse.token().totalToken()))
+                .answer(originalResponse.answer())
+                .token(new Token(originalResponse.token().promptToken(), originalResponse.token().completionToken(), originalResponse.token().totalToken()))
                 .responseMode(responseMode)
                 .build();
     }
