@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static com.education.kids_chat.utils.Helper.*;
+
 @Service
 public class ChatService {
 
@@ -26,35 +28,6 @@ public class ChatService {
 
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
-
-
-    private final String SYS_PROMPT_NORMAL_MSG = "You are a child-safe educational assistant.\n" +
-            "You must:\n" +
-            "- Use simple language (age7–12)\n" +
-            "- Avoid sensitive topics\n" +
-            "- Never provide medical, legal,or unsafe advice\n" +
-            "- Never assume facts you are unsure about\n" +
-            "If you are not sure, say \"I don't know yet.\"";
-
-    /*
-    The behavior of GPT is intentional not accidental
-     */
-    private final String SYS_PROMPT_SUPPORTIVE_MSG = "You are a child-safe assistant.\n" +
-            "You must:\n" +
-            "-Response with empathy.\n" +
-            "-Do not judge or blame\n" +
-            "-Offer support and options\n" +
-            "-Do not escalate or alarm\n";
-
-    private final String FIX_SYS_PROMPT_MSG = """
-            Rewrite the following response.
-                Rules:
-                - Do not use absolute words such as "%s",
-                - Use careful and gentle language.
-                Response:
-                "%s"
-            
-            """;
 
 
     public Response handelChat(Request request) {
@@ -104,7 +77,7 @@ public class ChatService {
             }
             return Response
                     .builder()
-                    .answer("I am not sure how to answer that safely yet. Can you ask it again differently?")
+                    .answer(CLARIFICATION_SYSTEM_PROMPT_MSG)
                     .token(new Token(0, 0, 0))
                     .responseMode(ResponseMode.CLARIFICATION)
                     .build();
@@ -114,7 +87,6 @@ public class ChatService {
                 .builder()
                 .answer(orginalResponse.answer())
                 .token(new Token(orginalResponse.token().promptToken(), orginalResponse.token().completionToken(), orginalResponse.token().totalToken()))
-                .responseMode(ResponseMode.NORMAL)
                 .responseMode(responseMode)
                 .build();
     }

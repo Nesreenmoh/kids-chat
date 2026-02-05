@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.education.kids_chat.utils.Helper.BULLING_SYSTEM_PROMPT_MSG;
+import static com.education.kids_chat.utils.Helper.BULLYING_DEPLOYMENT_NAME;
+
 @Service
 public class BullyingDetectionService {
 
@@ -27,7 +30,7 @@ public class BullyingDetectionService {
 
     private final String BULLYING_ENDPOINT;
     private final String BULLYING_APIKEY;
-    private final String DEPLOY_NAME = "gpt-4.1-mini";
+
 
     public BullyingDetectionService(@Value("${azure.bullying.endpoint:}") String BULLYING_ENDPOINT, @Value("${azure.bullying.api.key}") String BULLYING_APIKEY) {
         this.BULLYING_ENDPOINT = BULLYING_ENDPOINT;
@@ -36,22 +39,6 @@ public class BullyingDetectionService {
 
 
     public BullyingResponse handelBullying(Request request) {
-
-        String prompt = """
-                
-                Classify the following message for bullying or emotional harm.
-                Return JSON only with NO markdown, NO explanation, NO code fences.
-                Return exactly this shape:
-                {
-                  "message": "<echo the original message>",
-                  "bullyingDetected": true/false,
-                  "category": "NONE" | "MILD" | "MODERATE" | "HIGH",
-                  "confidence": number
-                }
-                
-                Message: "%s"   
-                """.formatted(request.question());
-
 
         /*
        Define Bullying Model client
@@ -65,7 +52,7 @@ public class BullyingDetectionService {
         Instruct the system prompt
          */
         List<ChatRequestMessage> messages = List.of(
-                new ChatRequestSystemMessage(prompt)
+                new ChatRequestSystemMessage(BULLING_SYSTEM_PROMPT_MSG.formatted(request.question()))
         );
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);
@@ -73,7 +60,7 @@ public class BullyingDetectionService {
         /*
         Connect to GPT4.1-mini - cheap GPT Model
          */
-        ChatCompletions chatCompletions = client.getChatCompletions(DEPLOY_NAME, options);
+        ChatCompletions chatCompletions = client.getChatCompletions(BULLYING_DEPLOYMENT_NAME, options);
         /*
         extract the content of the result
          */

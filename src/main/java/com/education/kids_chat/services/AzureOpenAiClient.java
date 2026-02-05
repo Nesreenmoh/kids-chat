@@ -12,20 +12,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.education.kids_chat.utils.Helper.DEPLOYMENT_NAME;
+
 @Service
 public class AzureOpenAiClient {
 
 
     private final OpenAIClient openAIClient;
-    private final String deploymentName = "gpt-5.2-chat";
 
-    @Value("${azure.open.ai.endpoint:}")
-    private  String OPEN_AI_ENDPOINT;
 
-    @Value("${azure.open.ai.ai.key:}")
-    private String OPEN_AI_KEY;
-
-    public AzureOpenAiClient() {
+    public AzureOpenAiClient( @Value("${azure.open.ai.endpoint:}") String OPEN_AI_ENDPOINT, @Value("${azure.open.ai.key:}") String OPEN_AI_KEY ) {
         this.openAIClient = new OpenAIClientBuilder()
                 .credential(new AzureKeyCredential(OPEN_AI_KEY))
                 .endpoint(OPEN_AI_ENDPOINT)
@@ -40,10 +36,9 @@ public class AzureOpenAiClient {
         ));
 
         options.setN(1);
-        options.setMaxTokens(1600);
-        options.setTemperature(.5);
+        options.setMaxCompletionTokens(1600);
 
-        ChatCompletions completions = this.openAIClient.getChatCompletions(deploymentName, options);
+        ChatCompletions completions = this.openAIClient.getChatCompletions(DEPLOYMENT_NAME, options);
 
         ChatChoice chatChoice = completions.getChoices().get(0);
         String content = chatChoice.getMessage().getContent();
