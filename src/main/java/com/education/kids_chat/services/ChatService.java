@@ -1,23 +1,13 @@
 package com.education.kids_chat.services;
 
 
-import com.azure.ai.openai.OpenAIClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.ai.openai.models.*;
-import com.azure.core.credential.AzureKeyCredential;
 import com.education.kids_chat.enums.BullingCategory;
 import com.education.kids_chat.enums.ResponseMode;
-import com.education.kids_chat.models.BullyingResponse;
-import com.education.kids_chat.models.Request;
-import com.education.kids_chat.models.Response;
-import com.education.kids_chat.models.Token;
+import com.education.kids_chat.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ChatService {
@@ -26,12 +16,18 @@ public class ChatService {
     ContentSafetyService contentSafetyService;
 
     @Autowired
-    BullyingDetectionService  bullyingDetectionService;
+    BullyingDetectionService bullyingDetectionService;
+
+    @Autowired
+    BlackListWordValidator blackListWordValidator;
+
+    @Autowired
+    AzureOpenAiClient azureOpenAiClient;
+
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
-    private final String OPEN_AI_ENDPOINT;
-    private final String OPEN_AI_KEY;
-    private final String DEPLOY_NAME = "gpt-5.2-chat";
+
+
     private final String SYS_PROMPT_NORMAL_MSG = "You are a child-safe educational assistant.\n" +
             "You must:\n" +
             "- Use simple language (age7–12)\n" +
@@ -48,73 +44,77 @@ public class ChatService {
             "-Response with empathy.\n" +
             "-Do not judge or blame\n" +
             "-Offer support and options\n" +
-            "-Do not escalate or alarm\n" ;
+            "-Do not escalate or alarm\n";
 
-
-    public ChatService(@Value("${azure.open.ai.endpoint:}") String OPEN_AI_ENDPOINT, @Value("${azure.open.ai.key:}") String OPEN_AI_KEY) {
-        this.OPEN_AI_ENDPOINT = OPEN_AI_ENDPOINT;
-        this.OPEN_AI_KEY = OPEN_AI_KEY;
-    }
+    private final String FIX_SYS_PROMPT_MSG = """
+            Rewrite the following response.
+                Rules:
+                - Do not use absolute words such as "%s",
+                - Use careful and gentle language.
+                Response:
+                "%s"
+            
+            """;
 
 
     public Response handelChat(Request request) {
 
-
+                /*
+                Call Content Safety
+                 */
         if (!contentSafetyService.contentSafetyCheck(request)) {
             return Response
                     .builder()
                     .answer("I cannot help you with that, but I am here if you want to talk about something else.")
                     .responseMode(ResponseMode.REFUSAL)
-                    .token( new Token(0,0,0))
+                    .token(new Token(0, 0, 0))
                     .build();
         }
 
-        /*
-        Bullying Detection Check
-         */
+                /*
+                Bullying Detection Check
+                 */
 
         BullyingResponse bullyingResult = bullyingDetectionService.handelBullying(request);
         ResponseMode responseMode;
-        String  systemPrompt = switch(bullyingResult.category()){
-            case BullingCategory.HIGH,BullingCategory.MODERATE ->{
+        String systemPrompt = switch (bullyingResult.category()) {
+            case BullingCategory.HIGH, BullingCategory.MODERATE -> {
                 responseMode = ResponseMode.SUPPORTIVE;
-               yield  SYS_PROMPT_SUPPORTIVE_MSG;
+                yield SYS_PROMPT_SUPPORTIVE_MSG;
             }
-            default ->  {
-                responseMode = ResponseMode.CLARIFICATION;
-                yield  SYS_PROMPT_NORMAL_MSG;
+            default -> {
+                responseMode = ResponseMode.NORMAL;
+                yield SYS_PROMPT_NORMAL_MSG;
             }
         };
 
+        Response orginalResponse = azureOpenAiClient.generateResponse(request.question(), systemPrompt);
+        /*
+        validate the response from the model
+         */
+        ValidationResult validateResultV1 = blackListWordValidator.validate(orginalResponse.answer());
 
-      /*
-      Create Open AI Chat
-       */
-        OpenAIClient openAIClient = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(OPEN_AI_KEY))
-                .endpoint(OPEN_AI_ENDPOINT)
-                .buildClient();
+        if (!validateResultV1.valid()) {
 
+            Response repaired = azureOpenAiClient.generateResponse(FIX_SYS_PROMPT_MSG.formatted(validateResultV1.violations()), orginalResponse.answer());
 
-        List<ChatRequestMessage> chatMessages = List.of(
-                new ChatRequestSystemMessage(systemPrompt),
-                new ChatRequestUserMessage(request.question()));
+            ValidationResult validateResultV2 = blackListWordValidator.validate(repaired.answer());
+            if (validateResultV2.valid()) {
+                return repaired;
+            }
+            return Response
+                    .builder()
+                    .answer("I am not sure how to answer that safely yet. Can you ask it again differently?")
+                    .token(new Token(0, 0, 0))
+                    .responseMode(ResponseMode.CLARIFICATION)
+                    .build();
 
-        LOGGER.info("System prompt {}",systemPrompt);
-       /*
-       define the Options
-        */
-
-        ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
-
-       /*
-       define chat completion to get the response
-        */
-        ChatCompletions chatCompletions = openAIClient.getChatCompletions(DEPLOY_NAME, options);
+        }
         return Response
                 .builder()
-                .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
-                .token(new Token(chatCompletions.getUsage().getPromptTokens(),chatCompletions.getUsage().getCompletionTokens(),chatCompletions.getUsage().getTotalTokens() ))
+                .answer(orginalResponse.answer())
+                .token(new Token(orginalResponse.token().promptToken(), orginalResponse.token().completionToken(), orginalResponse.token().totalToken()))
+                .responseMode(ResponseMode.NORMAL)
                 .responseMode(responseMode)
                 .build();
     }
