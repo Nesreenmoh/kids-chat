@@ -5,7 +5,9 @@ import com.azure.ai.openai.OpenAIClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.*;
 import com.azure.core.credential.AzureKeyCredential;
+import com.education.kids_chat.enums.BullingCategory;
 import com.education.kids_chat.enums.ResponseMode;
+import com.education.kids_chat.models.BullyingResponse;
 import com.education.kids_chat.models.Request;
 import com.education.kids_chat.models.Response;
 import org.slf4j.Logger;
@@ -29,13 +31,23 @@ public class ChatService {
     private final String OPEN_AI_ENDPOINT;
     private final String OPEN_AI_KEY;
     private final String DEPLOY_NAME = "gpt-5.2-chat";
-    private final String SYS_GEN_MSG = "Youare a child-safe educational assistant.\n" +
+    private final String SYS_PROMPT_NORMAL_MSG = "You are a child-safe educational assistant.\n" +
             "You must:\n" +
-            "- Use simplelanguage (age7–12)\n" +
-            "- Avoidsensitive topics\n" +
+            "- Use simple language (age7–12)\n" +
+            "- Avoid sensitive topics\n" +
             "- Never provide medical, legal,or unsafe advice\n" +
-            "- Never assume facts youare unsure about\n" +
-            "If youarenot sure, say \"I don't know yet.\"";
+            "- Never assume facts you are unsure about\n" +
+            "If you are not sure, say \"I don't know yet.\"";
+
+    /*
+    The behavior of GPT is intentional not accidental
+     */
+    private final String SYS_PROMPT_SUPPORTIVE_MSG = "You are a child-safe assistant.\n" +
+            "You must:\n" +
+            "-Response with empathy.\n" +
+            "-Do not judge or blame\n" +
+            "-Offer support and options\n" +
+            "-Do not escalate or alarm\n" ;
 
 
     public ChatService(@Value("${azure.open.ai.endpoint:}") String OPEN_AI_ENDPOINT, @Value("${azure.open.ai.key:}") String OPEN_AI_KEY) {
@@ -58,6 +70,24 @@ public class ChatService {
                     .build();
         }
 
+        /*
+        Bullying Detection Check
+         */
+
+        BullyingResponse bullyingResult = bullyingDetectionService.handelBullying(request);
+        ResponseMode responseMode;
+        String  systemPrompt = switch(bullyingResult.category()){
+            case BullingCategory.HIGH,BullingCategory.MODERATE ->{
+                responseMode = ResponseMode.SUPPORTIVE;
+               yield  SYS_PROMPT_SUPPORTIVE_MSG;
+            }
+            default ->  {
+                responseMode = ResponseMode.CLARIFICATION;
+                yield  SYS_PROMPT_NORMAL_MSG;
+            }
+        };
+
+
       /*
       Create Open AI Chat
        */
@@ -68,10 +98,10 @@ public class ChatService {
 
 
         List<ChatRequestMessage> chatMessages = List.of(
-                new ChatRequestSystemMessage(SYS_GEN_MSG),
+                new ChatRequestSystemMessage(systemPrompt),
                 new ChatRequestUserMessage(request.question()));
 
-
+        LOGGER.info("System prompt {}",systemPrompt);
        /*
        define the Options
         */
@@ -82,15 +112,14 @@ public class ChatService {
        define chat completion to get the response
         */
         ChatCompletions chatCompletions = openAIClient.getChatCompletions(DEPLOY_NAME, options);
-//        return Response
-//                .builder()
-//                .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
-//                .promptToken(chatCompletions.getUsage().getPromptTokens())
-//                .completionToken(chatCompletions.getUsage().getCompletionTokens())
-//                .totalToken(chatCompletions.getUsage().getTotalTokens())
-//                .responseMode(ResponseMode.SUPPORTIVE)
-//                .build();
-        return bullyingDetectionService.handelBullying(request);
+        return Response
+                .builder()
+                .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
+                .promptToken(chatCompletions.getUsage().getPromptTokens())
+                .completionToken(chatCompletions.getUsage().getCompletionTokens())
+                .totalToken(chatCompletions.getUsage().getTotalTokens())
+                .responseMode(responseMode)
+                .build();
     }
 
 

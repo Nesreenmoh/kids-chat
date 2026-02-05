@@ -51,7 +51,7 @@ public class ContentSafetyService {
         try {
             analyzeTextResult = client.analyzeText(options);
         }catch(HttpResponseException ex)    {
-            System.out.println("Analyze text failed.\nStatus code: " + ex.getResponse().getStatusCode() + ", Error message: " + ex.getMessage());
+            LOGGER.error("Analyze text failed.\nStatus code: " + ex.getResponse().getStatusCode() + ", Error message: " + ex.getMessage());
             throw ex;
         }
 

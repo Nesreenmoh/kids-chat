@@ -8,8 +8,10 @@ import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.core.credential.AzureKeyCredential;
+import com.education.kids_chat.models.BullyingResponse;
 import com.education.kids_chat.models.Request;
-import com.education.kids_chat.models.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,13 +35,13 @@ public class BullyingDetectionService {
     }
 
 
-    public Response handelBullying(Request request) {
+    public BullyingResponse handelBullying(Request request) {
 
         String prompt = """
                 
                 Classify the following message for bullying or emotional harm.
-                
-                Return JSON only:
+                Return JSON only with NO markdown, NO explanation, NO code fences.
+                Return exactly this shape:
                 {
                   "message": "<echo the original message>",
                   "bullyingDetected": true/false,
@@ -59,19 +61,40 @@ public class BullyingDetectionService {
                 .endpoint(BULLYING_ENDPOINT)
                 .buildClient();
 
+        /*
+        Instruct the system prompt
+         */
         List<ChatRequestMessage> messages = List.of(
                 new ChatRequestSystemMessage(prompt)
         );
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);
 
+        /*
+        Connect to GPT4.1-mini - cheap GPT Model
+         */
         ChatCompletions chatCompletions = client.getChatCompletions(DEPLOY_NAME, options);
-        return Response
-                .builder()
-                .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
-                .promptToken(chatCompletions.getUsage().getPromptTokens())
-                .completionToken(chatCompletions.getUsage().getCompletionTokens())
-                .totalToken(chatCompletions.getUsage().getTotalTokens())
+        /*
+        extract the content of the result
+         */
+        BullyingResponse result= extractBullyingResponse(chatCompletions.getChoices().get(0).getMessage().getContent());
+        return result;
+
+    }
+
+    private BullyingResponse extractBullyingResponse(String content) {
+        ObjectMapper mapper = new ObjectMapper();
+        BullyingResponse bullyingResponse;
+        try {
+            bullyingResponse= mapper.readValue(content,BullyingResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot deserialize BullyingResponse", e);
+        }
+        return BullyingResponse.builder()
+                .category(bullyingResponse.category())
+                .confidence(bullyingResponse.confidence())
+                .message(bullyingResponse.message())
+                .bullyingDetected(bullyingResponse.bullyingDetected())
                 .build();
 
     }
