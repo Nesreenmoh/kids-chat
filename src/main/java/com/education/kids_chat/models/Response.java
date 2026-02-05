@@ -5,5 +5,5 @@ import lombok.Builder;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Builder
-public record Response(ResponseMode responseMode, String answer, Integer promptToken, Integer completionToken, Integer totalToken) {
+public record Response(ResponseMode responseMode, String answer, Token token) {
 }

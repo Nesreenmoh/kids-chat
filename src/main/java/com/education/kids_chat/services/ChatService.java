@@ -10,6 +10,7 @@ import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.BullyingResponse;
 import com.education.kids_chat.models.Request;
 import com.education.kids_chat.models.Response;
+import com.education.kids_chat.models.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +65,7 @@ public class ChatService {
                     .builder()
                     .answer("I cannot help you with that, but I am here if you want to talk about something else.")
                     .responseMode(ResponseMode.REFUSAL)
-                    .totalToken(0)
-                    .completionToken(0)
-                    .promptToken(0)
+                    .token( new Token(0,0,0))
                     .build();
         }
 
@@ -115,9 +114,7 @@ public class ChatService {
         return Response
                 .builder()
                 .answer(chatCompletions.getChoices().get(0).getMessage().getContent())
-                .promptToken(chatCompletions.getUsage().getPromptTokens())
-                .completionToken(chatCompletions.getUsage().getCompletionTokens())
-                .totalToken(chatCompletions.getUsage().getTotalTokens())
+                .token(new Token(chatCompletions.getUsage().getPromptTokens(),chatCompletions.getUsage().getCompletionTokens(),chatCompletions.getUsage().getTotalTokens() ))
                 .responseMode(responseMode)
                 .build();
     }
