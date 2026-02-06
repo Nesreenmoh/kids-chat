@@ -1,4 +1,4 @@
-package com.education.kids_chat.services;
+package com.education.kids_chat.clients;
 
 
 import com.azure.ai.openai.OpenAIClient;
@@ -15,6 +15,14 @@ import java.util.List;
 
 import static com.education.kids_chat.utils.Helper.DEPLOYMENT_NAME;
 
+/*
+ Check if the question/content has HIGH/MEDIUM
+ self-harm
+ violence
+ hate
+ sexual
+ Refuse to answer
+ */
 @Service
 public class AzureOpenAiClient {
 

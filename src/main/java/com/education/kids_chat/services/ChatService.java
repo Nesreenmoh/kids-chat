@@ -1,6 +1,8 @@
 package com.education.kids_chat.services;
 
 
+import com.education.kids_chat.clients.AzureContentSafetyClient;
+import com.education.kids_chat.clients.AzureOpenAiClient;
 import com.education.kids_chat.enums.BullingCategory;
 import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.*;
@@ -14,8 +16,6 @@ import static com.education.kids_chat.utils.Helper.*;
 @Service
 public class ChatService {
 
-    @Autowired
-    ContentSafetyService contentSafetyService;
 
     @Autowired
     BullyingDetectionService bullyingDetectionService;
@@ -26,6 +26,9 @@ public class ChatService {
     @Autowired
     AzureOpenAiClient azureOpenAiClient;
 
+    @Autowired
+    private AzureContentSafetyClient contentSafetyClient;
+
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
 
@@ -35,7 +38,7 @@ public class ChatService {
                 /*
                 Call Content Safety
                  */
-        if (!contentSafetyService.contentSafetyCheck(request)) {
+        if (!contentSafetyClient.contentSafetyCheck(request)) {
             return Response
                     .builder()
                     .answer("I cannot help you with that, but I am here if you want to talk about something else.")
