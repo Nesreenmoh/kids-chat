@@ -1,8 +1,9 @@
 package com.education.kids_chat.controllers;
 
 import com.education.kids_chat.models.Request;
-import com.education.kids_chat.models.Response;
-import com.education.kids_chat.services.ChatService;
+import com.education.kids_chat.models.AiResponse;
+import com.education.kids_chat.services.AnswerOrchestratorService;
+import com.education.kids_chat.services.GPTAnswerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatController {
 
     @Autowired
-    ChatService chatService;
+    AnswerOrchestratorService answerOrchestratorService;
 
      private final Logger LOG = LoggerFactory.getLogger(ChatController.class);
 
@@ -26,10 +27,10 @@ public class ChatController {
              produces = "application/json",
              path = "/ask"
      )
-    public Response getAnswer(@RequestBody Request request){
+    public AiResponse getGPTAnswer(@RequestBody Request request){
 
-         Response response = chatService.handelChat(request);
-         LOG.info(response.toString());
-         return response;
+       AiResponse answer = answerOrchestratorService.generateAnswer(request);
+         LOG.info(answer.toString());
+         return answer;
      }
 }

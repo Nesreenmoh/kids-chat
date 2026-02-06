@@ -8,7 +8,6 @@ import com.azure.ai.contentsafety.models.TextCategoriesAnalysis;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.exception.HttpResponseException;
 import com.education.kids_chat.models.Request;
-import com.education.kids_chat.services.ChatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

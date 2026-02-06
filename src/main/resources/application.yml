@@ -1,0 +1,23 @@
+
+spring:
+    application:
+        name: kids_chat
+
+azure:
+  open:
+    ai:
+      endpoint: ${OPEN_AI_ENDPOINT}
+      key: ${OPEN_AI_KEY}
+  content:
+    safety:
+      endpoint: ${AZURE_CONTENT_SAFETY_ENDPOINT}
+      api:
+          key: ${AZURE_CONTENT_SAFETY_APIKEY}
+  bullying:
+    endpoint: {AZURE_BULLYING_ENDPOINT}
+    api:
+      key: ${AZURE_BULLYING_APIKEY}
+
+ai:
+  answer-mode: GPT_ONLY
+
