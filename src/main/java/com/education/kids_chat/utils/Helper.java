@@ -61,6 +61,26 @@ The behavior of GPT is intentional not accidental
                 "%s"
             """;
 
+    public static final String RAG_SYS_PROMPT_MSG = """
+            you are a child-safe educational assistant.
+            You must follow the rules:
+            - Answer ONLY using provided knowledge.
+            - Use simple language for ages 7-12
+            - Do not add new facts.
+            - Do not guess.
+            - Avoid absolute words like "always" or "never". 
+            You must answer ONLY using the information below.
+            if the answer is not there,  say "I do not know yet."
+    """;
+
+    public static final String groundedPrompt= """
+            Knowledge:
+            <<<
+            %s
+            >>>
+            Question:
+            %s
+            """;
     public static final String CLARIFICATION_SYSTEM_PROMPT_MSG    = "I am not sure how to answer that safely yet. Can you ask it again differently?";
 
 

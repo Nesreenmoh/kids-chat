@@ -64,7 +64,7 @@ public class GPTAnswerService {
             }
         };
 
-        AiResponse originalAiResponse = azureOpenAiClient.generateResponse(request.question(), systemPrompt, responseMode);
+        AiResponse originalAiResponse = azureOpenAiClient.generateGPTResponse(request.question(), systemPrompt, responseMode);
         LOGGER.info("Original response: {}", originalAiResponse.answer());
         /*
         validate the response from the model
@@ -73,7 +73,7 @@ public class GPTAnswerService {
 
         if (!validateResultV1.valid()) {
             String sysPro = FIX_SYS_PROMPT_MSG.formatted(validateResultV1.violations(), originalAiResponse.answer());
-            AiResponse repaired = azureOpenAiClient.generateResponse(originalAiResponse.answer(), sysPro, responseMode);
+            AiResponse repaired = azureOpenAiClient.generateGPTResponse(originalAiResponse.answer(), sysPro, responseMode);
             LOGGER.info("Repaired1 response: {}", repaired);
             ValidationResult validateResultV2 = blackListWordValidator.validate(repaired.answer());
             if (validateResultV2.valid()) {

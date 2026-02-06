@@ -7,6 +7,7 @@ import com.azure.ai.openai.models.*;
 import com.azure.core.credential.AzureKeyCredential;
 import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.AiResponse;
+import com.education.kids_chat.models.KnowledgeChunk;
 import com.education.kids_chat.models.Token;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class AzureOpenAiClient {
                 .buildClient();
     }
 
-    public AiResponse generateResponse(String userPrompt, String systemPrompt, ResponseMode responseMode) {
+    public AiResponse generateGPTResponse(String userPrompt, String systemPrompt, ResponseMode responseMode) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(List.of(
                 new ChatRequestSystemMessage(systemPrompt),
@@ -59,5 +60,29 @@ public class AzureOpenAiClient {
                 .responseMode(responseMode)
                 .token(new Token(completionsUsage.getPromptTokens(), completionsUsage.getCompletionTokens(), completionsUsage.getTotalTokens()))
                 .build();
+    }
+
+
+    public AiResponse generateGroundedAnswer(String sysPrompt, String groundedPrompt) {
+
+
+        ChatCompletionsOptions options = new ChatCompletionsOptions(List.of(
+                new ChatRequestSystemMessage(sysPrompt),
+                new ChatRequestUserMessage(groundedPrompt)
+        ));
+
+        ChatCompletions completions = openAIClient.getChatCompletions(DEPLOYMENT_NAME, options);
+
+        ChatChoice chatChoice = completions.getChoices().get(0);
+        String content = chatChoice.getMessage().getContent();
+        CompletionsUsage completionsUsage = completions.getUsage();
+
+        return AiResponse
+                .builder()
+                .answer(content)
+                .responseMode(ResponseMode.NORMAL)
+                .token(new Token(completionsUsage.getPromptTokens(), completionsUsage.getCompletionTokens(), completionsUsage.getTotalTokens()))
+                .build();
+
     }
 }
