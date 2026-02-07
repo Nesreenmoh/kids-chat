@@ -31,7 +31,7 @@ public class AzureOpenAiClient {
     private final OpenAIClient openAIClient;
 
 
-    public AzureOpenAiClient( @Value("${azure.open.ai.endpoint:}") String OPEN_AI_ENDPOINT, @Value("${azure.open.ai.key:}") String OPEN_AI_KEY ) {
+    public AzureOpenAiClient(@Value("${azure.open.ai.endpoint:}") String OPEN_AI_ENDPOINT, @Value("${azure.open.ai.key:}") String OPEN_AI_KEY) {
         this.openAIClient = new OpenAIClientBuilder()
                 .credential(new AzureKeyCredential(OPEN_AI_KEY))
                 .endpoint(OPEN_AI_ENDPOINT)
@@ -72,7 +72,7 @@ public class AzureOpenAiClient {
         ));
 
         ChatCompletions completions = openAIClient.getChatCompletions(DEPLOYMENT_NAME, options);
-
+        options.setN(2);
         ChatChoice chatChoice = completions.getChoices().get(0);
         String content = chatChoice.getMessage().getContent();
         CompletionsUsage completionsUsage = completions.getUsage();

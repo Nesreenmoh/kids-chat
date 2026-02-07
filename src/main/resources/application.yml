@@ -19,5 +19,5 @@ azure:
       key: ${AZURE_BULLYING_APIKEY}
 
 ai:
-  answer-mode: RAG_ONLY
+  answer-mode: GPT_ONLY
 

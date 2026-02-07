@@ -8,8 +8,11 @@ import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.core.credential.AzureKeyCredential;
+import com.education.kids_chat.enums.BullingCategory;
+import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.BullyingResponse;
 import com.education.kids_chat.models.Request;
+import com.education.kids_chat.models.ResponseContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -18,9 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
-import static com.education.kids_chat.utils.Helper.BULLING_SYSTEM_PROMPT_MSG;
-import static com.education.kids_chat.utils.Helper.BULLYING_DEPLOYMENT_NAME;
+import static com.education.kids_chat.utils.Helper.*;
+import static com.education.kids_chat.utils.Helper.SYS_PROMPT_NORMAL_MSG;
 
 @Service
 public class BullyingDetectionService {
@@ -84,6 +88,23 @@ public class BullyingDetectionService {
                 .bullyingDetected(bullyingResponse.bullyingDetected())
                 .build();
 
+    }
+
+
+    ResponseContext generateResponseContext(Request request) {
+        BullyingResponse bullyingResult  = handelBullying(request);
+        ResponseMode responseMode;
+        String systemPrompt = switch (bullyingResult.category()) {
+            case BullingCategory.HIGH, BullingCategory.MODERATE -> {
+                responseMode = ResponseMode.SUPPORTIVE;
+                yield SYS_PROMPT_SUPPORTIVE_MSG;
+            }
+            default -> {
+                responseMode = ResponseMode.NORMAL;
+                yield SYS_PROMPT_NORMAL_MSG;
+            }
+        };
+        return  ResponseContext.builder().systemPrompt(systemPrompt).responseMode(responseMode).build();
     }
 
 }
