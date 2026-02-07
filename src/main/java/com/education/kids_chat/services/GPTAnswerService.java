@@ -4,15 +4,14 @@ package com.education.kids_chat.services;
 import com.education.kids_chat.clients.AzureContentSafetyClient;
 import com.education.kids_chat.clients.AzureOpenAiClient;
 import com.education.kids_chat.enums.ResponseMode;
-import com.education.kids_chat.models.*;
+import com.education.kids_chat.models.AiResponse;
+import com.education.kids_chat.models.Request;
+import com.education.kids_chat.models.ResponseContext;
+import com.education.kids_chat.models.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-
-import static com.education.kids_chat.utils.Helper.*;
 
 @Service
 public class GPTAnswerService {
@@ -52,39 +51,19 @@ public class GPTAnswerService {
                 Bullying Detection Check
                  */
 
-        ResponseContext responseContext = bullyingDetectionService.generateResponseContext(request);
+        ResponseContext bullingServiceResult = bullyingDetectionService.generateResponseContext(request);
 
 
-        AiResponse originalAiResponse = azureOpenAiClient.generateGPTResponse(request.question(), responseContext.systemPrompt(), responseContext.responseMode());
+        AiResponse originalAiResponse = azureOpenAiClient.generateGPTResponse(request.question(), bullingServiceResult.systemPrompt(), bullingServiceResult.responseMode());
+
         LOGGER.info("Original response: {}", originalAiResponse.answer());
+
         /*
         validate the response from the model
          */
-        ValidationResult validateResultV1 = blackListWordValidator.validate(originalAiResponse.answer());
+        return blackListWordValidator.validateResponse(originalAiResponse, bullingServiceResult.responseMode());
 
-        if (!validateResultV1.valid()) {
-            String sysPro = FIX_SYS_PROMPT_MSG.formatted(validateResultV1.violations(), originalAiResponse.answer());
-            AiResponse repaired = azureOpenAiClient.generateGPTResponse(originalAiResponse.answer(), sysPro, responseContext.responseMode());
-            LOGGER.info("Repaired1 response: {}", repaired);
-            ValidationResult validateResultV2 = blackListWordValidator.validate(repaired.answer());
-            if (validateResultV2.valid()) {
-                return repaired;
-            } else {
-                return AiResponse
-                        .builder()
-                        .answer(CLARIFICATION_SYSTEM_PROMPT_MSG)
-                        .token(new Token(0, 0, 0))
-                        .responseMode(ResponseMode.CLARIFICATION).build();
-            }
 
-        }
-        return AiResponse
-                .builder()
-                .answer(originalAiResponse.answer())
-                .token(new Token(originalAiResponse.token().promptToken(), originalAiResponse.token().completionToken(), originalAiResponse.token().totalToken()))
-                .responseMode(responseContext.responseMode())
-                .build();
     }
-
 
 }
