@@ -1,20 +1,17 @@
 package com.education.kids_chat.controllers;
 
-import com.education.kids_chat.models.Request;
 import com.education.kids_chat.models.AiResponse;
+import com.education.kids_chat.models.Request;
 import com.education.kids_chat.services.AnswerOrchestratorService;
-import com.education.kids_chat.services.GPTAnswerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 @RequestMapping("v1/api/chat")
+@CrossOrigin(origins = {"http://localhost:4200", "https://nesaiphase01.z13.web.core.windows.net"})
 public class ChatController {
 
     @Autowired

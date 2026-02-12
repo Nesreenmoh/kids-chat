@@ -1,8 +1,13 @@
 package com.education.kids_chat.models;
 
+import com.education.kids_chat.enums.ConfidenceLevel;
 import com.education.kids_chat.enums.ResponseMode;
 import lombok.Builder;
+import lombok.With;
+
+import java.util.List;
 
 @Builder
-public record AiResponse(ResponseMode responseMode, String answer, Token token) {
+@With
+public record AiResponse(ResponseMode responseMode, String answer, Token token, List<String> sources, ConfidenceLevel confidenceLevel) {
 }

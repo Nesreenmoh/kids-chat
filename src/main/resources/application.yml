@@ -5,7 +5,7 @@ spring:
 
 azure:
   open:
-    ai:
+    ai: #GPT5
       endpoint: ${OPEN_AI_ENDPOINT}
       key: ${OPEN_AI_KEY}
   content:
@@ -13,11 +13,13 @@ azure:
       endpoint: ${AZURE_CONTENT_SAFETY_ENDPOINT}
       api:
           key: ${AZURE_CONTENT_SAFETY_APIKEY}
-  bullying:
+  bullying: # GPT4
     endpoint: {AZURE_BULLYING_ENDPOINT}
     api:
       key: ${AZURE_BULLYING_APIKEY}
 
 ai:
-  answer-mode: GPT_ONLY
+  answer-mode: RAG_ONLY
+  #RAG_ONLY
+  #GPT_ONLY
 

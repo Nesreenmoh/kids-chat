@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Helper {
 
-    public  static final String DEPLOYMENT_NAME = "gpt-5.2-chat";
+    public  static final String DEPLOYMENT_NAME = "gpt-5-chat";
 
     public static final List<String> FORBIDDEN_WORDS = List.of(
             "always",
@@ -14,7 +14,7 @@ public class Helper {
             "nobody"
     );
 
-    public static final String BULLYING_DEPLOYMENT_NAME = "gpt-4.1-mini";
+    public static final String BULLYING_DEPLOYMENT_NAME = "gpt-4.1-nano";
 
     public static final String BULLING_SYSTEM_PROMPT_MSG = """
                 

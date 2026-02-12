@@ -21,10 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.education.kids_chat.utils.Helper.*;
-import static com.education.kids_chat.utils.Helper.SYS_PROMPT_NORMAL_MSG;
 
 @Service
 public class BullyingDetectionService {

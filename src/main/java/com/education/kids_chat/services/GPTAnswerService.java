@@ -3,6 +3,7 @@ package com.education.kids_chat.services;
 
 import com.education.kids_chat.clients.AzureContentSafetyClient;
 import com.education.kids_chat.clients.AzureOpenAiClient;
+import com.education.kids_chat.enums.ConfidenceLevel;
 import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.AiResponse;
 import com.education.kids_chat.models.Request;
@@ -61,7 +62,9 @@ public class GPTAnswerService {
         /*
         validate the response from the model
          */
-        return blackListWordValidator.validateResponse(originalAiResponse, bullingServiceResult.responseMode());
+
+        AiResponse gptResponse = blackListWordValidator.validateResponse(originalAiResponse, bullingServiceResult.responseMode());
+        return gptResponse.withConfidenceLevel(ConfidenceLevel.LOW);
 
 
     }
