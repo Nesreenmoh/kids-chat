@@ -9,5 +9,5 @@ import java.util.List;
 
 @Builder
 @With
-public record AiResponse(ResponseMode responseMode, String answer, Token token, List<String> sources, ConfidenceLevel confidenceLevel) {
+public record AiResponse(ResponseMode responseMode, String answer, Token token, List<KnowledgeChunk> sources, ConfidenceLevel confidenceLevel) {
 }

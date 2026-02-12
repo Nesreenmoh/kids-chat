@@ -5,6 +5,7 @@ import com.education.kids_chat.clients.AzureOpenAiClient;
 import com.education.kids_chat.enums.ConfidenceLevel;
 import com.education.kids_chat.enums.ResponseMode;
 import com.education.kids_chat.models.AiResponse;
+import com.education.kids_chat.models.KnowledgeChunk;
 import com.education.kids_chat.models.Request;
 import com.education.kids_chat.models.Token;
 import org.slf4j.Logger;
@@ -35,7 +36,8 @@ public class RagAnswerService {
     private final static Logger LOGGER = LoggerFactory.getLogger(RagAnswerService.class);
 
     public AiResponse generateAnswer(Request request) {
-        if(inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock().isEmpty()){
+//        System.out.println(inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock(request));
+        if(inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock(request).isEmpty()){
             return  AiResponse
                     .builder()
                     .answer("I do not know yet.")
@@ -58,16 +60,21 @@ public class RagAnswerService {
                     .build();
         }
 
+        List<KnowledgeChunk> sources = inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock(request);
+
         ragOriginalAiResponse  =  azureOpenAiClient
-                .generateGroundedAnswer(RAG_SYS_PROMPT_MSG, groundedPrompt.formatted(inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock(), request));
+                .generateGroundedAnswer(RAG_SYS_PROMPT_MSG, groundedPrompt.formatted(sources, request));
 
 
-        return ragOriginalAiResponse.withConfidenceLevel(calculateConfidenceLevel(inMemoryKnowledgeRetrievalService.retrieveKnowledgeBlock()));
+        System.out.println("sources: " + calculateConfidenceLevel(sources));
+        return ragOriginalAiResponse
+                .withSources(sources)
+                .withConfidenceLevel(calculateConfidenceLevel(sources));
     }
 
-    private static ConfidenceLevel calculateConfidenceLevel(String chunks) {
+    private static ConfidenceLevel calculateConfidenceLevel(List<KnowledgeChunk> chunks) {
 
-       int count = chunks.split(",").length;
+       int count = chunks.size();
 
 
         if(count >= 4) return ConfidenceLevel.HIGH;

@@ -1,0 +1,119 @@
+
+$page-bg: #cfe8ff;     // light blue page bg
+$brand:   #2f61b8;     // header blue
+$bot-bubble: #e9eff7;  // light bot bubble
+$user-bubble: #cfe0ff; // light user bubble
+$text: #1f2937;
+
+.page {
+  background: $page-bg;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-card {
+  width: min(680px, 92vw);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: $brand;
+  color: #fff;
+  padding: 16px 20px;
+
+  .bot-avatar {
+    font-size: 28px;
+    line-height: 1;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.15);
+    border-radius: 50%;
+  }
+  .title {
+    font-weight: 700;
+    font-size: 20px;
+  }
+}
+
+.chat-body {
+  padding: 20px;
+  background: #f8fafc;
+  height: 420px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bubble {
+  max-width: 85%;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: $bot-bubble;
+  color: $text;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+
+  &.me {
+    align-self: flex-end;
+    background: $user-bubble;
+  }
+
+  .bubble-text {
+    line-height: 1.4;
+    font-size: 16px;
+  }
+}
+
+.typing {
+  display: flex; align-items: center; gap: 6px;
+  span {
+    width: 7px; height: 7px; background: #9aa8bc; border-radius: 50%;
+    animation: blink 1.2s infinite ease-in-out;
+    &:nth-child(2){ animation-delay: .2s; }
+    &:nth-child(3){ animation-delay: .4s; }
+  }
+}
+@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+.chat-input {
+  background: #fff;
+  padding: 14px 18px;
+  display: flex; gap: 10px; align-items: center;
+  border-top: 1px solid #eef2f7;
+
+  input {
+    flex: 1;
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: 28px;
+    border: 1px solid #dce3ee;
+    outline: none;
+    background: #f2f5f9;
+  }
+
+  .send {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: none; color: #fff; background: $brand;
+    font-weight: 700; cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform .06s ease;
+    &:disabled { opacity: .5; cursor: default; }
+    &:active { transform: scale(.96); }
+  }
+}

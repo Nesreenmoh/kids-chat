@@ -6,7 +6,6 @@ import com.education.kids_chat.models.Request;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class InMemoryKnowledgeRetrievalService implements KnowledgeRetrieval {
@@ -19,10 +18,12 @@ public class InMemoryKnowledgeRetrievalService implements KnowledgeRetrieval {
 
 
     @Override
-    public String retrieveKnowledgeBlock() {
+    public List<KnowledgeChunk> retrieveKnowledgeBlock(Request request) {
+        System.out.println("question: " + request.question().toLowerCase());
         return knowledgeBase.stream()
-                .map(chunk -> chunk.content().toLowerCase())
-                .collect(Collectors.joining("\n"));
+                .filter(chunk -> chunk.content().toLowerCase().contains("plants"))
+                .limit(2)
+                .toList();
     }
 
 }

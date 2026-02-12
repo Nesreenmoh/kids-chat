@@ -23,12 +23,13 @@ public class AnswerOrchestratorService {
         this.ragAnswerService = ragAnswerService;
     }
 
-    public AiResponse generateAnswer(Request userQuestion) {
+    public AiResponse generateAnswer(Request request) {
 
-        LOGGER.info(properties.getAnswerMode().toString());
-        return switch (properties.getAnswerMode()) {
-            case GPT_ONLY -> gptAnswerService.generateAnswer(userQuestion);
-            case RAG_ONLY -> ragAnswerService.generateAnswer(userQuestion);
-        };
+        System.out.println("RAG: "+request.useRag());
+         if (request.useRag()) {
+            return ragAnswerService.generateAnswer(request);
+        }
+         else
+             return gptAnswerService.generateAnswer(request);
     }
 }

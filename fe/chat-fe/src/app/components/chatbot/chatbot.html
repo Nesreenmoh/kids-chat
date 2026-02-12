@@ -1,0 +1,46 @@
+
+<div class="page">
+  <div class="chat-card">
+    <div class="chat-header">
+      <div class="left">
+        <div class="bot-avatar">🤖</div>
+        <div class="title">Kids Chatbot</div>
+      </div>
+
+      <!-- RAG toggle -->
+       <div class="header-right">
+      <label class="toggle" title="Enable/disable RAG">
+        <input type="checkbox" [(ngModel)]="ragEnabled" />
+        <span class="slider"></span>
+        <span class="toggle-label">{{ ragEnabled ? 'RAG: On' : 'RAG: Off' }}</span>
+      </label>
+      </div>
+    </div>
+
+    <div class="chat-body">
+      <ng-container *ngFor="let m of messages">
+        <div class="bubble" [class.me]="m.role === 'user'">
+          <div class="bubble-text">{{ m.text }}</div>
+        </div>
+      </ng-container>
+
+      <div class="typing" *ngIf="sending">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input
+        type="text"
+        placeholder="Type a message..."
+        name="chatInput"
+        [(ngModel)]="input"
+        (keydown)="onEnter($event)"
+        [disabled]="sending"
+      />
+      <button class="send" (click)="onSend()" [disabled]="sending || !input.trim()">
+        ▶
+      </button>
+    </div>
+  </div>
+</div>
