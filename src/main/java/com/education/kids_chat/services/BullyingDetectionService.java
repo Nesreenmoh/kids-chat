@@ -80,7 +80,7 @@ public class BullyingDetectionService {
             throw new RuntimeException("Cannot deserialize BullyingResponse", e);
         }
         return BullyingResponse.builder()
-                .category(bullyingResponse.category())
+                .bullyingCategory(bullyingResponse.bullyingCategory())
                 .confidence(bullyingResponse.confidence())
                 .message(bullyingResponse.message())
                 .bullyingDetected(bullyingResponse.bullyingDetected())
@@ -92,16 +92,17 @@ public class BullyingDetectionService {
     ResponseContext generateResponseContext(Request request) {
         BullyingResponse bullyingResult  = handelBullying(request);
         ResponseMode responseMode;
-        String systemPrompt = switch (bullyingResult.category()) {
-            case BullingCategory.HIGH, BullingCategory.MODERATE -> {
-                responseMode = ResponseMode.SUPPORTIVE;
-                yield SYS_PROMPT_SUPPORTIVE_MSG;
+        String systemPrompt;
+        if(bullyingResult.bullyingDetected())
+        {
+            responseMode = ResponseMode.SUPPORTIVE;
+            systemPrompt= SYS_PROMPT_SUPPORTIVE_MSG;
+        }
+        else
+        {
+            responseMode = ResponseMode.NORMAL;
+            systemPrompt=  SYS_PROMPT_NORMAL_MSG;
             }
-            default -> {
-                responseMode = ResponseMode.NORMAL;
-                yield SYS_PROMPT_NORMAL_MSG;
-            }
-        };
         return  ResponseContext.builder().systemPrompt(systemPrompt).responseMode(responseMode).build();
     }
 

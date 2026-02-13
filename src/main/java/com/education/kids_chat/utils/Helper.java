@@ -14,17 +14,23 @@ public class Helper {
             "nobody"
     );
 
-    public static final String BULLYING_DEPLOYMENT_NAME = "gpt-4.1-nano";
+    public static final String BULLYING_DEPLOYMENT_NAME = "gpt-4o-mini";
 
     public static final String BULLING_SYSTEM_PROMPT_MSG = """
                 
-                Classify the following message for bullying or emotional harm.
-                Return JSON only with NO markdown, NO explanation, NO code fences.
-                Return exactly this shape:
+                You are a content classification system. Your task is to detect bullying or emotional distress in children's text.
+                Bullying Includes:  
+                1. Insults
+                2. Self-degrading language
+                3. Harassment
+                4. Expressions of worthlessness
+                
+                Return JSON ONLY with NO markdown, NO explanation, NO code fences. Return exactly like this :
+                
                 {
                   "message": "<echo the original message>",
                   "bullyingDetected": true/false,
-                  "category": "NONE" | "MILD" | "MODERATE" | "HIGH",
+                  "bullyingCategory": "NONE" | "MILD" | "MODERATE" | "HIGH",
                   "confidence": number
                 }
                 
